@@ -1,0 +1,153 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+#Baseball: exact and truncate method (change p to get different trunction results)
+s1a=sort(c(5.09, 5.08, 5.21, 5.17, 5.07, 5.24, 5.12, 5.16, 5.18, 5.19, 5.26, 5.10, 5.28, 5.29, 5.27, 5.09, 5.24, 5.26, 5.17, 5.13, 5.27, 5.26, 5.17, 5.19, 5.28, 5.28, 5.18, 5.27, 5.25, 5.26, 5.26, 5.18, 5.13, 5.08, 5.25, 5.17, 5.09, 5.16, 5.24, 5.23, 5.28, 5.24, 5.23, 5.23, 5.27, 5.22, 5.26, 5.27, 5.24, 5.27, 5.25, 5.28, 5.24, 5.26, 5.24, 5.24, 5.27, 5.26, 5.22, 5.09))
+
+p=0.05
+lsl= 4.85 
+usl = 5.45
+sd0=sqrt(var(s1a))      
+sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+
+cp0=(usl-lsl)/(6*sd0)
+lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+
+cp1=(usl-lsl)/(6*sd1)
+lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+
+exact=c((lcl0+ucl0)/2,lcl0,ucl0,ucl0-lcl0)  #  Exact
+trunc5=c((lcl+ucl)/2,lcl,ucl,ucl-lcl)     # 5% Truncate
+# Trunc 10%
+p=0.10
+sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+cp1=(usl-lsl)/(6*sd1)
+lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+
+trunc10=c((lcl+ucl)/2,lcl,ucl,ucl-lcl)     # 10% Truncate
+
+
+# ADJ and ADJ*
+
+    md=mean(s1a)
+    md2=median(s1a)
+    
+    sum=0   #ADJ
+    sumb=0  # ADJ*
+    for(m in 1:n){
+      sum=sum+(s1a[m]-md)^2
+      sumb=sumb+(s1a[m]-md2)^2
+    }
+    sd1=sqrt(sum/(n-1))
+    sd1b=sqrt(sumb/(n-1)) 
+    
+    s4=sd1^4
+    s4b=sd1b^4
+    
+    sum=0
+    sumb=0
+    xbar=mean(s1a)
+    xbarb=median(s1a)
+    for(m in 1:n){
+      sum=sum+(s1a[m]-xbar)^4
+      sumb=sumb+(s1a[m]-xbarb)^4
+    }
+    
+    gamma_hat=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sum/s4)-3*(n-1)^2/((n-2)*(n-3))
+    r_hat=(2*n)/(gamma_hat+2*n/(n-1))
+    
+    gamma_hatb=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sumb/s4b)-3*(n-1)^2/((n-2)*(n-3))
+    r_hatb=(2*n)/(gamma_hatb+2*n/(n-1))
+    
+    cp0=(usl-lsl)/(6*sd1)
+    cp0b=(usl-lsl)/(6*sd1b)
+    lcl=cp0*sqrt(qchisq(0.025,r_hat)/r_hat)
+    ucl=cp0*sqrt(qchisq(1-0.025,r_hat)/r_hat)
+    lclb=cp0b*sqrt(qchisq(0.025,r_hatb)/r_hatb)
+    uclb=cp0b*sqrt(qchisq(1-0.025,r_hatb)/r_hatb)
+    
+  
+ADJresult=c((lcl+ucl)/2,lcl,ucl,ucl-lcl)          # ADJ result
+ADJbresult=c((lclb+uclb)/2,lclb,uclb,uclb-lclb)   # ADJ* result
+
+
+           
+    #ALS and ALS*
+           
+        md=mean(s1a)
+        md2=median(s1a)
+        
+        sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      ke5=((n+1)/(n-1))*G2*(1+5*G2/n)
+      B=(ke5+2*n/(n-1))*(1+(ke5+2*n/(n-1))/(2*n))/n
+      C=(ke5+2*n/(n-1))/(2*n)
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      ke5b=((n+1)/(n-1))*G2b*(1+5*G2b/n)
+      Bb=(ke5b+2*n/(n-1))*(1+(ke5b+2*n/(n-1))/(2*n))/n
+      Cb=(ke5b+2*n/(n-1))/(2*n)
+      
+      cp0=(usl-lsl)/(6*sd1b)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(B)+C))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(B)+C))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Bb)+Cb))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Bb)+Cb))
+        
+        
+         ALS=c((lcl+ucl)/2,lcl,ucl,ucl-lcl)          #ALS result
+         ALSb=c((lclb+uclb)/2,lclb,uclb,uclb-lclb)   #ALS* result
+              
+          
+  
+  write.csv(rbind(exact, trunc5,trunc10,ADJresult, ADJbresult,LS,LSb,ALS,ALSb), "D:\\baseball.csv",row.names=F)
+

@@ -1,0 +1,1637 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+#Gamma(4,2): ALS and ALS* method
+set.seed(101)
+result_gamma42ALS=matrix(rep(0,4*5),4,5)
+result_gamma42lALS=matrix(rep(0,4*5),4,5)
+result_gamma42ALSb=matrix(rep(0,4*5),4,5)
+result_gamma42lALSb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,4,2)+48)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      ke5=((n+1)/(n-1))*G2*(1+5*G2/n)
+      B=(ke5+2*n/(n-1))*(1+(ke5+2*n/(n-1))/(2*n))/n
+      C=(ke5+2*n/(n-1))/(2*n)
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      ke5b=((n+1)/(n-1))*G2b*(1+5*G2b/n)
+      Bb=(ke5b+2*n/(n-1))*(1+(ke5b+2*n/(n-1))/(2*n))/n
+      Cb=(ke5b+2*n/(n-1))/(2*n)
+      
+      cp0=(usl-lsl)/(6*sd1b)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(B)+C))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(B)+C))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Bb)+Cb))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Bb)+Cb))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    result_gamma42ALS[k,j]=count/M
+    result_gamma42lALS[k,j]=mean(width)
+    result_gamma42ALSb[k,j]=countb/M
+    result_gamma42lALSb[k,j]=mean(widthb)
+  }
+}
+result_gamma42ALS
+result_gamma42ALSb
+result_gamma42lALS
+result_gamma42lALSb
+
+
+#
+  #Gamma(4,2): LS method and LS*
+    set.seed(101)
+    result_gamma42ls=matrix(rep(0,4*5),4,5)
+    result_gamma42lls=matrix(rep(0,4*5),4,5)
+    result_gamma42lsb=matrix(rep(0,4*5),4,5)
+    result_gamma42llsb=matrix(rep(0,4*5),4,5)
+    
+    nv=c(30,50,75,100)
+    uslv=c(53,53.99,54.50,55.01,56)
+    lslv=c(47,46.01,45.50,44.99,44)
+    cpv=c(1,1.33,1.5,1.67,2)
+    cov_prob=rep(0,5)
+    for(k in 1:4) {
+      for(j in 1:5) {
+        count=0
+        countb=0
+        M=50000
+        width=rep(0,M)
+        widthb=rep(0,M)
+        n=nv[k]
+        usl=uslv[j]
+        lsl=lslv[j]
+        for(i in 1:M){
+          
+          s1a=(rgamma(n,4,2)+48)
+          #sd0=sqrt(var(s1a))
+          md=mean(s1a)
+          md2=median(s1a)
+          
+          sum=0   #LS
+          sumb=0  # LS*
+          for(m in 1:n){
+            sum=sum+(s1a[m]-md)^2
+            sumb=sumb+(s1a[m]-md2)^2
+          }
+          sd1=sqrt(sum/(n-1))
+          sd1b=sqrt(sumb/(n-1)) 
+          
+          sum4=0
+          sum2=0
+          sum4b=0
+          sum2b=0
+          xbar=mean(s1a)
+          xbarb=median(s1a)
+          for(m in 1:n) {
+            sum2=sum2+(s1a[m]-xbar)^2
+            sum4=sum4+(s1a[m]-xbar)^4
+            sum2b=sum2+(s1a[m]-xbarb)^2
+            sum4b=sum4b+(s1a[m]-xbarb)^4
+          }
+          
+          m4=sum4/n
+          m2=sum2/n
+          m4b=sum4b/n
+          m2b=sum2b/n
+          
+          g2=m4/(m2^2)-3
+          G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+          A=(G2+2*n/(n-1))/n
+          
+          g2b=m4b/(m2b^2)-3
+          G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+          Ab=(G2b+2*n/(n-1))/n
+          
+          cp0=(usl-lsl)/(6*sd1)
+          cp0b=(usl-lsl)/(6*sd1b)
+          lcl=cp0/sqrt(exp(1.96*sqrt(A)))
+          ucl=cp0/sqrt(exp(-1.96*sqrt(A)))
+          lclb=cp0b/sqrt(exp(1.96*sqrt(Ab)))
+          uclb=cp0b/sqrt(exp(-1.96*sqrt(Ab)))
+          #lcl
+          #ucl
+          width[i]=ucl-lcl
+          widthb[i]=uclb-lclb
+          
+          if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+          
+          
+          if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+        }
+        
+        result_gamma42ls[k,j]=count/M
+        result_gamma42lsb[k,j]=countb/M
+        result_gamma42lls[k,j]=mean(width)
+        result_gamma42llsb[k,j]=mean(widthb)
+      }
+    }
+    result_gamma42ls
+    result_gamma42lsb
+    result_gamma42lls
+    result_gamma42llsb
+  #Gamma(4,2): ADJ method and ADJ*
+    set.seed(101)
+    result_gamma42=matrix(rep(0,4*5),4,5)
+    result_gamma42l=matrix(rep(0,4*5),4,5)
+    result_gamma42b=matrix(rep(0,4*5),4,5)
+    result_gamma42lb=matrix(rep(0,4*5),4,5)
+    
+    nv=c(30,50,75,100)
+    uslv=c(53,53.99,54.50,55.01,56)
+    lslv=c(47,46.01,45.50,44.99,44)
+    cpv=c(1,1.33,1.5,1.67,2)
+    cov_prob=rep(0,5)
+    for(k in 1:4) {
+      for(j in 1:5) {
+        count=0
+        countb=0
+        M=50000
+        width=rep(0,M)
+        widthb=rep(0,M)
+        n=nv[k]
+        usl=uslv[j]
+        lsl=lslv[j]
+        for(i in 1:M){s1a=(rgamma(n,4,2)+48)
+        #sd0=sqrt(var(s1a))
+        md=mean(s1a)
+        md2=median(s1a)
+        
+        sum=0   #ADJ
+        sumb=0  # ADJ*
+        for(m in 1:n){
+          sum=sum+(s1a[m]-md)^2
+          sumb=sumb+(s1a[m]-md2)^2
+        }
+        sd1=sqrt(sum/(n-1))
+        sd1b=sqrt(sumb/(n-1)) 
+        
+        s4=sd1^4
+        s4b=sd1b^4
+        
+        sum=0
+        sumb=0
+        xbar=mean(s1a)
+        xbarb=median(s1a)
+        for(m in 1:n){
+          sum=sum+(s1a[m]-xbar)^4
+          sumb=sumb+(s1a[m]-xbarb)^4
+        }
+        
+        gamma_hat=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sum/s4)-3*(n-1)^2/((n-2)*(n-3))
+        r_hat=(2*n)/(gamma_hat+2*n/(n-1))
+        
+        gamma_hatb=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sumb/s4b)-3*(n-1)^2/((n-2)*(n-3))
+        r_hatb=(2*n)/(gamma_hatb+2*n/(n-1))
+        
+        cp0=(usl-lsl)/(6*sd1)
+        cp0b=(usl-lsl)/(6*sd1b)
+        lcl=cp0*sqrt(qchisq(0.025,r_hat)/r_hat)
+        ucl=cp0*sqrt(qchisq(1-0.025,r_hat)/r_hat)
+        lclb=cp0b*sqrt(qchisq(0.025,r_hatb)/r_hatb)
+        uclb=cp0b*sqrt(qchisq(1-0.025,r_hatb)/r_hatb)
+        
+        width[i]=ucl-lcl
+        widthb[i]=uclb-lclb
+        
+        #lcl
+        #ucl
+        width[i]=ucl-lcl
+        
+        if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+        if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+        }
+        
+        result_gamma42[k,j]=count/M
+        result_gamma42l[k,j]=mean(width)
+        result_gamma42b[k,j]=countb/M
+        result_gamma42lb[k,j]=mean(widthb)
+      }
+    }
+    result_gamma42
+    result_gamma42b
+    result_gamma42l
+    result_gamma42lb
+    #Gamma(4,2): exact and truncate method
+    set.seed(101)
+    result_gamma42trunc=matrix(rep(0,4*5),4,5)
+result_gamma42ltrunc=matrix(rep(0,4*5),4,5)
+    result_gamma42exact=matrix(rep(0,4*5),4,5)
+    result_gamma42lexact=matrix(rep(0,4*5),4,5)
+    
+    nv=c(30,50,75,100)
+    uslv=c(53,53.99,54.50,55.01,56)
+    lslv=c(47,46.01,45.50,44.99,44)
+    cpv=c(1,1.33,1.5,1.67,2)
+    cov_prob=rep(0,5)
+    p=0.1
+    for(k in 1:4) {
+      for(j in 1:5) {
+        count=0
+        count0=0
+        M=50000
+        width=rep(0,M)
+        width0=rep(0,M)
+        n=nv[k]
+        usl=uslv[j]
+        lsl=lslv[j]
+        for(i in 1:M){
+          #s1a=(rgamma(n,4,2)+48)
+         
+          
+          s1a=sort(rgamma(n,4,2)+48)
+          sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+          sd0=sqrt(var(s1a))
+          cp0=(usl-lsl)/(6*sd0)
+          lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+          ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+          
+          cp1=(usl-lsl)/(6*sd1)
+          lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+          ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+          #lcl
+          
+          #ucl
+          width0[i]=ucl0-lcl0
+          width[i]=ucl-lcl
+          
+          if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+          
+          if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+        }
+        
+        
+        result_gamma42exact[k,j]=count0/M
+        result_gamma42lexact[k,j]=mean(width0)
+        result_gamma42trunc[k,j]=count/M
+        result_gamma42ltrunc[k,j]=mean(width)
+        
+      }
+    }
+    result_gamma42exact
+    result_gamma42lexact
+    result_gamma42trunc
+   result_gamma42ltrunc
+
+  #Gamma(4,2): truncate 5% method
+    set.seed(101)
+    result_gamma42trunc5=matrix(rep(0,4*5),4,5)
+result_gamma42ltrunc5=matrix(rep(0,4*5),4,5)
+   
+    
+    nv=c(30,50,75,100)
+    uslv=c(53,53.99,54.50,55.01,56)
+    lslv=c(47,46.01,45.50,44.99,44)
+    cpv=c(1,1.33,1.5,1.67,2)
+    cov_prob=rep(0,5)
+    p=0.05
+    for(k in 1:4) {
+      for(j in 1:5) {
+        count=0
+        count0=0
+        M=50000
+        width=rep(0,M)
+        width0=rep(0,M)
+        n=nv[k]
+        usl=uslv[j]
+        lsl=lslv[j]
+        for(i in 1:M){
+          #s1a=(rgamma(n,4,2)+48)
+         
+          
+          s1a=sort(rgamma(n,4,2)+48)
+          sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+          
+          cp1=(usl-lsl)/(6*sd1)
+          lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+          ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+          #lcl
+          
+          #ucl
+         
+          width[i]=ucl-lcl
+          
+          if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+          
+        
+        }
+        
+        
+
+        result_gamma42trunc5[k,j]=count/M
+        result_gamma42ltrunc5[k,j]=mean(width)
+        
+      }
+    }
+   
+    result_gamma42trunc5
+   result_gamma42ltrunc5
+
+
+
+
+
+
+
+
+resultN50=rbind(result_N501exact,result_N501trunc,result_N501ALS,result_N501ALSb, result_N501ls, result_N501lsb, result_N501, result_N501b)
+resultN50l=rbind(result_N501lexact,result_N501ltrunc,result_N501lALS,result_N501lALSb, result_N501lls, result_N501lsb, result_N501l, result_N501lb)
+write.csv(cbind(resultN50,resultN50l),"resultN501.csv")
+
+
+
+
+    xx=c(1,1.33,1.5,1.67,2)
+    cpp=c(xx,xx,xx,xx,xx,xx,xx,xx)
+    k=4
+   # result=c(result_gamma42ALS[k,],result_gamma42ALSb[k,],result_gamma42ls[k,],result_gamma42lsb[k,],result_gamma42[k,],result_gamma42b[k,],result_gamma42trunc[k,],result_gamma42trunc5[k,],result_gamma42exact[k,])
+    result=c(result_gamma42lALS[k,],result_gamma42lALSb[k,],result_gamma42lls[k,],result_gamma42llsb[k,],result_gamma42l[k,],result_gamma42lb[k,],result_gamma42ltrunc[k,],result_gamma42trunc5[k,],result_gamma42lexact[k,])
+   # plot(cpp,result,type='n',xlab="CP value",ylab="Cover_probability",main="n=100,Gamma(4,2)+48")
+    plot(cpp,result,type='n',xlab="CP value",ylab="Expected_Lengths",main="n=100,Gamma(4,2)+48")
+    text(cpp,result,c(rep("A",5),rep("B",5),rep("C",5),rep("D",5),rep("E",5),rep("F",5),rep("G",5),rep("H",5),rep("I",5)))
+    legend(1,.10,c("A=ALS","B=ALS*", "C=LS","D=LS*","E=ADJ","F=ADJ*","G=Trunc10","H=Trunc5","I=exact"))
+    lines(xx,result_gamma42lALS[k,],lty=1)
+    lines(xx,result_gamma42lALSb[k,],lty=2)
+    lines(xx,result_gamma42lls[k,],lty=3)
+    lines(xx,result_gamma42llsb[k,],lty=4)
+    lines(xx,result_gamma42l[k,],lty=5)
+    lines(xx,result_gamma42lb[k,],lty=6)
+    lines(xx,result_gamma42ltrunc[k,],lty=7)
+    lines(xx,result_gamma42ltrunc5[k,],lty=8)
+    lines(xx,result_gamma42lexact[k,],lty=9)
+    
+   # lines(xx,result_gamma42ALS[k,],lty=1)
+    #lines(xx,result_gamma425ALSb[k,],lty=2)
+    #lines(xx,result_gamma42ls[k,],lty=3)
+    #lines(xx,result_gamma42lsb[k,],lty=4)
+    #lines(xx,result_gamma42[k,],lty=5)
+    #lines(xx,result_gamma42b[k,],lty=6)
+    #lines(xx,result_gamma42trunc[k,],lty=7)
+    #lines(xx,result_gamma42exact[k,],lty=8)
+    
+    
+    #N(50,1)): ALS and ALS* method
+set.seed(101)
+result_N501ALS=matrix(rep(0,4*5),4,5)
+result_N501lALS=matrix(rep(0,4*5),4,5)
+result_N501ALSb=matrix(rep(0,4*5),4,5)
+result_N501lALSb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=rnorm(n,50,1)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      ke5=((n+1)/(n-1))*G2*(1+5*G2/n)
+      B=(ke5+2*n/(n-1))*(1+(ke5+2*n/(n-1))/(2*n))/n
+      C=(ke5+2*n/(n-1))/(2*n)
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      ke5b=((n+1)/(n-1))*G2b*(1+5*G2b/n)
+      Bb=(ke5b+2*n/(n-1))*(1+(ke5b+2*n/(n-1))/(2*n))/n
+      Cb=(ke5b+2*n/(n-1))/(2*n)
+      
+      cp0=(usl-lsl)/(6*sd1b)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(B)+C))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(B)+C))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Bb)+Cb))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Bb)+Cb))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    result_N501ALS[k,j]=count/M
+    result_N501lALS[k,j]=mean(width)
+    result_N501ALSb[k,j]=countb/M
+    result_N501lALSb[k,j]=mean(widthb)
+  }
+}
+result_N501ALS
+result_N501ALSb
+result_N501lALS
+result_N501lALSb
+
+#N(50,1): LS method and LS*
+set.seed(101)
+result_N501ls=matrix(rep(0,4*5),4,5)
+result_N501lls=matrix(rep(0,4*5),4,5)
+result_N501lsb=matrix(rep(0,4*5),4,5)
+result_N501llsb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=rnorm(n,50,1)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      A=(G2+2*n/(n-1))/n
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      Ab=(G2b+2*n/(n-1))/n
+      
+      cp0=(usl-lsl)/(6*sd1)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(A)))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(A)))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Ab)))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Ab)))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_N501ls[k,j]=count/M
+    result_N501lsb[k,j]=countb/M
+    result_N501lls[k,j]=mean(width)
+    result_N501llsb[k,j]=mean(widthb)
+  }
+}
+result_N501ls
+result_N501lsb
+result_N501lls
+result_N501llsb
+#Gamma(4,2): ADJ method and ADJ*
+set.seed(101)
+result_N501=matrix(rep(0,4*5),4,5)
+result_N501l=matrix(rep(0,4*5),4,5)
+result_N501b=matrix(rep(0,4*5),4,5)
+result_N501lb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      s1a=rnorm(n,50,1)
+    #sd0=sqrt(var(s1a))
+    md=mean(s1a)
+    md2=median(s1a)
+    
+    sum=0   #ADJ
+    sumb=0  # ADJ*
+    for(m in 1:n){
+      sum=sum+(s1a[m]-md)^2
+      sumb=sumb+(s1a[m]-md2)^2
+    }
+    sd1=sqrt(sum/(n-1))
+    sd1b=sqrt(sumb/(n-1)) 
+    
+    s4=sd1^4
+    s4b=sd1b^4
+    
+    sum=0
+    sumb=0
+    xbar=mean(s1a)
+    xbarb=median(s1a)
+    for(m in 1:n){
+      sum=sum+(s1a[m]-xbar)^4
+      sumb=sumb+(s1a[m]-xbarb)^4
+    }
+    
+    gamma_hat=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sum/s4)-3*(n-1)^2/((n-2)*(n-3))
+    r_hat=(2*n)/(gamma_hat+2*n/(n-1))
+    
+    gamma_hatb=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sumb/s4b)-3*(n-1)^2/((n-2)*(n-3))
+    r_hatb=(2*n)/(gamma_hatb+2*n/(n-1))
+    
+    cp0=(usl-lsl)/(6*sd1)
+    cp0b=(usl-lsl)/(6*sd1b)
+    lcl=cp0*sqrt(qchisq(0.025,r_hat)/r_hat)
+    ucl=cp0*sqrt(qchisq(1-0.025,r_hat)/r_hat)
+    lclb=cp0b*sqrt(qchisq(0.025,r_hatb)/r_hatb)
+    uclb=cp0b*sqrt(qchisq(1-0.025,r_hatb)/r_hatb)
+    
+    width[i]=ucl-lcl
+    widthb[i]=uclb-lclb
+    
+    #lcl
+    #ucl
+    width[i]=ucl-lcl
+    
+    if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+    if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_N501[k,j]=count/M
+    result_N501l[k,j]=mean(width)
+    result_N501b[k,j]=countb/M
+    result_N501lb[k,j]=mean(widthb)
+  }
+}
+result_N501
+result_N501b
+result_N501l
+result_N501lb
+
+#Gamma(4,2): exact and truncate method
+set.seed(101)
+result_N501trunc=matrix(rep(0,4*5),4,5)
+result_N501ltrunc=matrix(rep(0,4*5),4,5)
+result_N501exact=matrix(rep(0,4*5),4,5)
+result_N501lexact=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+p=0.1
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    count0=0
+    M=50000
+    width=rep(0,M)
+    width0=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      #s1a=(rgamma(n,4,2)+48)
+      sd0=sqrt(var(s1a))
+      s1a=sort(rnorm(n,50,1))
+      sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+      
+      cp0=(usl-lsl)/(6*sd0)
+      lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      
+      cp1=(usl-lsl)/(6*sd1)
+      lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      #lcl
+      
+      #ucl
+      width0[i]=ucl0-lcl0
+      width[i]=ucl-lcl
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+    }
+    
+    
+    result_N501exact[k,j]=count0/M
+    result_N501lexact[k,j]=mean(width0)
+    result_N501trunc[k,j]=count/M
+    result_N501ltrunc[k,j]=mean(width)
+    
+  }
+}
+result_N501exact
+result_N501lexact
+result_N501trunc
+result_N501ltrunc
+
+#Gamma(4,2): truncate5 method
+set.seed(101)
+result_N501trunc5=matrix(rep(0,4*5),4,5)
+result_N501ltrunc5=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+p=0.1
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    count0=0
+    M=1000
+    width=rep(0,M)
+    width0=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      #s1a=(rgamma(n,4,2)+48)
+     
+      
+      s1a=sort(rnorm(n,50,1))
+      sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+      sd0=sqrt(var(s1a))   
+      cp0=(usl-lsl)/(6*sd0)
+      lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      
+      cp1=(usl-lsl)/(6*sd1)
+      lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      #lcl
+      
+      #ucl
+      width0[i]=ucl0-lcl0
+      width[i]=ucl-lcl
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+    }
+    
+    
+    result_N501exact[k,j]=count0/M
+    result_N501lexact[k,j]=mean(width0)
+    
+    result_N501trunc5[k,j]=count/M
+    result_N501ltrunc5[k,j]=mean(width)
+    }   
+  }
+  
+result_N501exact
+result_N501lexact
+result_N501trunc5
+result_N501ltrunc5
+
+
+resultN50=rbind(result_N501exact,result_N501trunc,result_N501ALS,result_N501ALSb, result_N501ls, result_N501lsb, result_N501, result_N501b)
+resultN50l=rbind(result_N501lexact,result_N501ltrunc,result_N501lALS,result_N501lALSb, result_N501lls, result_N501lsb, result_N501l, result_N501lb)
+write.csv(cbind(resultN50,resultN50l),"resultN501.csv")
+
+resultGamma42=rbind(result_gamma42exact,result_gamma42trunc5,result_gamma42trunc,result_gamma42ALS,result_gamma42ALSb, result_gamma42ls, result_gamma42lsb, result_gamma42, result_gamma42b)
+resultGamma42l=rbind(result_gamma42lexact,result_gamma42ltrunc5,result_gamma42ltrunc,result_gamma42lALS,result_gamma42lALSb, result_gamma42lls, result_gamma42lsb, result_gamma42l, result_gamma42lb)
+write.csv(cbind(resultGamma42,resultGamma42l),"resultgamma42.csv")
+
+
+write.csv(cbind(result_gamma42trunc5,result_gamma42ltrunc5),"resultgamma42t5.csv")
+
+write.csv(cbind(result_N501trunc5,result_N501ltrunc5),"resultN501t5.csv")
+
+
+
+#
+#Gamma(0.75,0.867): ALS and ALS* method
+set.seed(101)
+result_gamma075ALS=matrix(rep(0,4*5),4,5)
+result_gamma075lALS=matrix(rep(0,4*5),4,5)
+result_gamma075ALSb=matrix(rep(0,4*5),4,5)
+result_gamma075lALSb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,0.75,0.867)+49.1340)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      ke5=((n+1)/(n-1))*G2*(1+5*G2/n)
+      B=(ke5+2*n/(n-1))*(1+(ke5+2*n/(n-1))/(2*n))/n
+      C=(ke5+2*n/(n-1))/(2*n)
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      ke5b=((n+1)/(n-1))*G2b*(1+5*G2b/n)
+      Bb=(ke5b+2*n/(n-1))*(1+(ke5b+2*n/(n-1))/(2*n))/n
+      Cb=(ke5b+2*n/(n-1))/(2*n)
+      
+      cp0=(usl-lsl)/(6*sd1b)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(B)+C))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(B)+C))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Bb)+Cb))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Bb)+Cb))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    result_gamma075ALS[k,j]=count/M
+    result_gamma075lALS[k,j]=mean(width)
+    result_gamma075ALSb[k,j]=countb/M
+    result_gamma075lALSb[k,j]=mean(widthb)
+  }
+}
+result_gamma075ALS
+result_gamma075ALSb
+result_gamma075lALS
+result_gamma075lALSb
+#Gamma(0.75,0.867): LS method and LS*
+set.seed(101)
+result_gamma075ls=matrix(rep(0,4*5),4,5)
+result_gamma075lls=matrix(rep(0,4*5),4,5)
+result_gamma075lsb=matrix(rep(0,4*5),4,5)
+result_gamma075llsb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,0.75,0.867)+49.1340)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      A=(G2+2*n/(n-1))/n
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      Ab=(G2b+2*n/(n-1))/n
+      
+      cp0=(usl-lsl)/(6*sd1)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(A)))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(A)))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Ab)))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Ab)))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_gamma075ls[k,j]=count/M
+    result_gamma075lsb[k,j]=countb/M
+    result_gamma075lls[k,j]=mean(width)
+    result_gamma075llsb[k,j]=mean(widthb)
+  }
+}
+result_gamma075ls
+result_gamma075lsb
+result_gamma075lls
+result_gamma075llsb
+#Gamma(0.75,0.867): ADJ method and ADJ*
+set.seed(101)
+result_gamma075=matrix(rep(0,4*5),4,5)
+result_gamma075l=matrix(rep(0,4*5),4,5)
+result_gamma075b=matrix(rep(0,4*5),4,5)
+result_gamma075lb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=5000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,0.75,0.867)+49.1340)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #ADJ
+      sumb=0  # ADJ*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      s4=sd1^4
+      s4b=sd1b^4
+      
+      sum=0
+      sumb=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n){
+        sum=sum+(s1a[m]-xbar)^4
+        sumb=sumb+(s1a[m]-xbarb)^4
+      }
+      
+      gamma_hat=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sum/s4)-3*(n-1)^2/((n-2)*(n-3))
+      r_hat=(2*n)/(gamma_hat+2*n/(n-1))
+      
+      gamma_hatb=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sumb/s4b)-3*(n-1)^2/((n-2)*(n-3))
+      r_hatb=(2*n)/(gamma_hatb+2*n/(n-1))
+      
+      cp0=(usl-lsl)/(6*sd1)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0*sqrt(qchisq(0.025,r_hat)/r_hat)
+      ucl=cp0*sqrt(qchisq(1-0.025,r_hat)/r_hat)
+      lclb=cp0b*sqrt(qchisq(0.025,r_hatb)/r_hatb)
+      uclb=cp0b*sqrt(qchisq(1-0.025,r_hatb)/r_hatb)
+      
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_gamma075[k,j]=count/M
+    result_gamma075l[k,j]=mean(width)
+    result_gamma075b[k,j]=countb/M
+    result_gamma075lb[k,j]=mean(widthb)
+  }
+}
+result_gamma075
+result_gamma075b
+result_gamma075l
+result_gamma075lb
+#Gamma(0.75,0.867): exact and truncate method
+set.seed(101)
+result_gamma075trunc=matrix(rep(0,4*5),4,5)
+result_gamma075ltrunc=matrix(rep(0,4*5),4,5)
+result_gamma075exact=matrix(rep(0,4*5),4,5)
+result_gamma075lexact=matrix(rep(0,4*5),4,5)
+result_gamma075trunc5=matrix(rep(0,4*5),4,5)
+result_gamma075ltrunc5=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+p=0.1
+p2=0.05
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    count2=0
+    count0=0
+    M=50000
+    width=rep(0,M)
+    width2=rep(0,M)
+    width0=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      #s1a=(rgamma(n,4,2)+48)
+      
+      s1a=sort(rgamma(n,0.75,0.867)+49.1340)
+      sd0=sqrt(var(s1a))
+      sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+      sd2=1.4826*sqrt(var(s1a[(trunc(n*p2)+1):(n-trunc(n*p2))]))
+      cp0=(usl-lsl)/(6*sd0)
+      lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      
+      cp1=(usl-lsl)/(6*sd1)
+      lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      cp2=(usl-lsl)/(6*sd2)
+      lcl2=cp2*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl2=cp2*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      #lcl
+      
+      #ucl
+      width0[i]=ucl0-lcl0
+      width[i]=ucl-lcl
+       width2[i]=ucl2-lcl2
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+      
+       if(cpv[j]>lcl2 & cpv[j]<ucl2) count2=count2+1
+    }
+    
+    
+    result_gamma075exact[k,j]=count0/M
+    result_gamma075lexact[k,j]=mean(width0)
+    result_gamma075trunc[k,j]=count/M
+    result_gamma075ltrunc[k,j]=mean(width)
+      result_gamma075trunc5[k,j]=count2/M
+    result_gamma075ltrunc5[k,j]=mean(width2)
+  }
+}
+result_gamma075exact
+result_gamma075lexact
+result_gamma075trunc
+result_gamma075ltrunc
+result_gamma075trunc5
+result_gamma075ltrunc5
+
+resultGamma075=rbind(result_gamma075exact,result_gamma075trunc5,result_gamma075trunc,result_gamma075ALS,result_gamma075ALSb, result_gamma075ls, result_gamma075lsb, result_gamma075, result_gamma075b)
+resultGamma075l=rbind(result_gamma075lexact,result_gamma075ltrunc5,result_gamma075ltrunc,result_gamma075lALS,result_gamma075lALSb, result_gamma075lls, result_gamma075lsb, result_gamma075l, result_gamma075lb)
+write.csv(cbind(resultGamma075,resultGamma075l),"resultgamma075.csv")
+
+xx=c(1,1.33,1.5,1.67,2)
+cpp=c(xx,xx,xx,xx,xx,xx,xx,xx)
+k=1
+#result=c(result_gamma075ALS[k,],result_gamma075ALSb[k,],result_gamma075ls[k,],result_gamma075lsb[k,],result_gamma075[k,],result_gamma075b[k,],result_gamma075trunc[k,],result_gamma075exact[k,])
+#plot(cpp,result,type='n',xlab="CP value",ylab="Cover_probability",main="n=100,Gamma(0.75,0.867)+49.1340")
+result=c(result_gamma075lALS[k,],result_gamma075lALSb[k,],result_gamma075lls[k,],result_gamma075llsb[k,],result_gamma075l[k,],result_gamma075lb[k,],result_gamma075ltrunc[k,],result_gamma075lexact[k,])
+plot(cpp,result,type='n',xlab="CP value",ylab="Expected_Length",main="n=30,Gamma(0.75,0.867)+49.1340")
+
+text(cpp,result,c(rep("A",5),rep("B",5),rep("C",5),rep("D",5),rep("E",5),rep("F",5),rep("G",5),rep("H",5)))
+legend(1,.10,c("A=ALS","B=ALS*", "C=LS","D=LS*","E=ADJ","F=ADJ*","G=Trunc","H=exact"))
+lines(xx,result_gamma075lALS[k,],lty=1)
+lines(xx,result_gamma075lALSb[k,],lty=2)
+lines(xx,result_gamma075lls[k,],lty=3)
+lines(xx,result_gamma075llsb[k,],lty=4)
+lines(xx,result_gamma075l[k,],lty=5)
+lines(xx,result_gamma075lb[k,],lty=6)
+lines(xx,result_gamma075ltrunc[k,],lty=7)
+lines(xx,result_gamma075lexact[k,],lty=8)
+
+
+#
+#Gamma(0.25,0.5): ALS and ALS* method
+set.seed(101)
+result_gamma025ALS=matrix(rep(0,4*5),4,5)
+result_gamma025lALS=matrix(rep(0,4*5),4,5)
+result_gamma025ALSb=matrix(rep(0,4*5),4,5)
+result_gamma025lALSb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,0.25,0.5)+49.5)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      ke5=((n+1)/(n-1))*G2*(1+5*G2/n)
+      B=(ke5+2*n/(n-1))*(1+(ke5+2*n/(n-1))/(2*n))/n
+      C=(ke5+2*n/(n-1))/(2*n)
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      ke5b=((n+1)/(n-1))*G2b*(1+5*G2b/n)
+      Bb=(ke5b+2*n/(n-1))*(1+(ke5b+2*n/(n-1))/(2*n))/n
+      Cb=(ke5b+2*n/(n-1))/(2*n)
+      
+      cp0=(usl-lsl)/(6*sd1)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(B)+C))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(B)+C))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Bb)+Cb))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Bb)+Cb))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    result_gamma025ALS[k,j]=count/M
+    result_gamma025lALS[k,j]=mean(width)
+    result_gamma025ALSb[k,j]=countb/M
+    result_gamma025lALSb[k,j]=mean(widthb)
+    
+  }
+}
+result_gamma025ALS
+result_gamma025ALSb
+result_gamma025lALS
+result_gamma025lALSb
+#Gamma((0.25,0.5): LS method and LS*
+set.seed(101)
+result_gamma025ls=matrix(rep(0,4*5),4,5)
+result_gamma025lls=matrix(rep(0,4*5),4,5)
+result_gamma025lsb=matrix(rep(0,4*5),4,5)
+result_gamma025llsb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+      s1a=(rgamma(n,0.25,0.5)+49.5)
+      #sd0=sqrt(var(s1a))
+      md=mean(s1a)
+      md2=median(s1a)
+      
+      sum=0   #LS
+      sumb=0  # LS*
+      for(m in 1:n){
+        sum=sum+(s1a[m]-md)^2
+        sumb=sumb+(s1a[m]-md2)^2
+      }
+      sd1=sqrt(sum/(n-1))
+      sd1b=sqrt(sumb/(n-1)) 
+      
+      sum4=0
+      sum2=0
+      sum4b=0
+      sum2b=0
+      xbar=mean(s1a)
+      xbarb=median(s1a)
+      for(m in 1:n) {
+        sum2=sum2+(s1a[m]-xbar)^2
+        sum4=sum4+(s1a[m]-xbar)^4
+        sum2b=sum2+(s1a[m]-xbarb)^2
+        sum4b=sum4b+(s1a[m]-xbarb)^4
+      }
+      
+      m4=sum4/n
+      m2=sum2/n
+      m4b=sum4b/n
+      m2b=sum2b/n
+      
+      g2=m4/(m2^2)-3
+      G2=((n-1)*((n-1)*g2+6))/((n-2)*(n-3))
+      A=(G2+2*n/(n-1))/n
+      
+      g2b=m4b/(m2b^2)-3
+      G2b=((n-1)*((n-1)*g2b+6))/((n-2)*(n-3))
+      Ab=(G2b+2*n/(n-1))/n
+      
+      cp0=(usl-lsl)/(6*sd1)
+      cp0b=(usl-lsl)/(6*sd1b)
+      lcl=cp0/sqrt(exp(1.96*sqrt(A)))
+      ucl=cp0/sqrt(exp(-1.96*sqrt(A)))
+      lclb=cp0b/sqrt(exp(1.96*sqrt(Ab)))
+      uclb=cp0b/sqrt(exp(-1.96*sqrt(Ab)))
+      #lcl
+      #ucl
+      width[i]=ucl-lcl
+      widthb[i]=uclb-lclb
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      
+      if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_gamma025ls[k,j]=count/M
+    result_gamma025lsb[k,j]=countb/M
+    result_gamma025lls[k,j]=mean(width)
+    result_gamma025llsb[k,j]=mean(widthb)
+  }
+}
+result_gamma025ls
+result_gamma025lsb
+result_gamma025lls
+result_gamma025llsb
+#Gamma((0.25,0.5): ADJ method and ADJ*
+set.seed(101)
+result_gamma025=matrix(rep(0,4*5),4,5)
+result_gamma025l=matrix(rep(0,4*5),4,5)
+result_gamma025b=matrix(rep(0,4*5),4,5)
+result_gamma025lb=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    countb=0
+    M=50000
+    width=rep(0,M)
+    widthb=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      
+    s1a=(rgamma(n,0.25,0.5)+49.5)
+    #sd0=sqrt(var(s1a))
+    md=mean(s1a)
+    md2=median(s1a)
+    
+    sum=0   #ADJ
+    sumb=0  # ADJ*
+    for(m in 1:n){
+      sum=sum+(s1a[m]-md)^2
+      sumb=sumb+(s1a[m]-md2)^2
+    }
+    sd1=sqrt(sum/(n-1))
+    sd1b=sqrt(sumb/(n-1)) 
+    
+    s4=sd1^4
+    s4b=sd1b^4
+    
+    sum=0
+    sumb=0
+    xbar=mean(s1a)
+    xbarb=median(s1a)
+    for(m in 1:n){
+      sum=sum+(s1a[m]-xbar)^4
+      sumb=sumb+(s1a[m]-xbarb)^4
+    }
+    
+    gamma_hat=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sum/s4)-3*(n-1)^2/((n-2)*(n-3))
+    r_hat=(2*n)/(gamma_hat+2*n/(n-1))
+    
+    gamma_hatb=(n*(n+1)/((n-1)*(n-2)*(n-3)))*(sumb/s4b)-3*(n-1)^2/((n-2)*(n-3))
+    r_hatb=(2*n)/(gamma_hatb+2*n/(n-1))
+    
+    cp0=(usl-lsl)/(6*sd1)
+    cp0b=(usl-lsl)/(6*sd1b)
+    lcl=cp0*sqrt(qchisq(0.025,r_hat)/r_hat)
+    ucl=cp0*sqrt(qchisq(1-0.025,r_hat)/r_hat)
+    lclb=cp0b*sqrt(qchisq(0.025,r_hatb)/r_hatb)
+    uclb=cp0b*sqrt(qchisq(1-0.025,r_hatb)/r_hatb)
+    
+    width[i]=ucl-lcl
+    widthb[i]=uclb-lclb
+    
+    #lcl
+    #ucl
+    width[i]=ucl-lcl
+    
+    if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+    if(cpv[j]>lclb & cpv[j]<uclb) countb=countb+1
+    }
+    
+    result_gamma025[k,j]=count/M
+    result_gamma025l[k,j]=mean(width)
+    result_gamma025b[k,j]=countb/M
+    result_gamma025lb[k,j]=mean(widthb)
+  }
+}
+result_gamma025
+result_gamma025b
+result_gamma025l
+result_gamma025lb
+#Gamma(0.25,0.5): exact and truncate method
+set.seed(101)
+result_gamma025trunc=matrix(rep(0,4*5),4,5)
+result_gamma025ltrunc=matrix(rep(0,4*5),4,5)
+result_gamma025exact=matrix(rep(0,4*5),4,5)
+result_gamma025lexact=matrix(rep(0,4*5),4,5)
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+p=0.1
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    count0=0
+    M=50000
+    width=rep(0,M)
+    width0=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      #s1a=(rgamma(n,4,2)+48)
+      
+      s1a=sort(rgamma(n,0.25,0.5)+49.5)
+      sd0=sqrt(var(s1a))
+      sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+      
+      cp0=(usl-lsl)/(6*sd0)
+      lcl0=cp0*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl0=cp0*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      
+      cp1=(usl-lsl)/(6*sd1)
+      lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      #lcl
+      
+      #ucl
+      width0[i]=ucl0-lcl0
+      width[i]=ucl-lcl
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+      if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+    }
+    
+    
+    result_gamma025exact[k,j]=count0/M
+    result_gamma025lexact[k,j]=mean(width0)
+    result_gamma025trunc[k,j]=count/M
+    result_gamma025ltrunc[k,j]=mean(width)
+    
+  }
+}
+result_gamma025exact
+result_gamma025lexact
+result_gamma025trunc
+result_gamma025ltrunc
+
+#Gamma(0.25,0.5): exact and truncate method
+set.seed(101)
+result_gamma025trunc5=matrix(rep(0,4*5),4,5)
+result_gamma025ltrunc5=matrix(rep(0,4*5),4,5)
+
+
+nv=c(30,50,75,100)
+uslv=c(53,53.99,54.50,55.01,56)
+lslv=c(47,46.01,45.50,44.99,44)
+cpv=c(1,1.33,1.5,1.67,2)
+cov_prob=rep(0,5)
+p=0.05
+for(k in 1:4) {
+  for(j in 1:5) {
+    count=0
+    count0=0
+    M=50000
+    width=rep(0,M)
+    width0=rep(0,M)
+    n=nv[k]
+    usl=uslv[j]
+    lsl=lslv[j]
+    for(i in 1:M){
+      #s1a=(rgamma(n,4,2)+48)
+      
+      s1a=sort(rgamma(n,0.25,0.5)+49.5)
+     
+      sd1=1.4826*sqrt(var(s1a[(trunc(n*p)+1):(n-trunc(n*p))]))
+     
+      cp1=(usl-lsl)/(6*sd1)
+      lcl=cp1*sqrt(qchisq(0.025,n-1)/(n-1))
+      ucl=cp1*sqrt(qchisq(1-0.025,n-1)/(n-1))
+      #lcl
+      
+      #ucl
+     
+      width[i]=ucl-lcl
+      
+      if(cpv[j]>lcl & cpv[j]<ucl) count=count+1
+      
+     # if(cpv[j]>lcl0 & cpv[j]<ucl0) count0=count0+1
+    }
+    
+    
+    result_gamma025trunc5[k,j]=count/M
+    result_gamma025ltrunc5[k,j]=mean(width)
+    
+  }
+}
+
+result_gamma025trunc5
+result_gamma025ltrunc5
+
+resultGamma025=rbind(result_gamma025exact,result_gamma025trunc5,result_gamma025trunc,result_gamma025ALS,result_gamma025ALSb, result_gamma025ls, result_gamma025lsb, result_gamma025, result_gamma025b)
+resultGamma025l=rbind(result_gamma025lexact,result_gamma025ltrunc5,result_gamma025ltrunc,result_gamma025lALS,result_gamma025lALSb, result_gamma025lls, result_gamma025lsb, result_gamma025l, result_gamma025lb)
+write.csv(cbind(resultGamma025,resultGamma025l),"resultgamma025.csv")
+
+xx=c(1,1.33,1.5,1.67,2)
+cpp=c(xx,xx,xx,xx,xx,xx,xx,xx)
+k=4
+#result=c(result_gamma025ALS[k,],result_gamma025ALSb[k,],result_gamma025ls[k,],result_gamma025lsb[k,],result_gamma025[k,],result_gamma025b[k,],result_gamma025trunc[k,],result_gamma025exact[k,])
+result=c(result_gamma025lALS[k,],result_gamma025lALSb[k,],result_gamma025lls[k,],result_gamma025llsb[k,],result_gamma025l[k,],result_gamma025lb[k,],result_gamma025ltrunc[k,],result_gamma025lexact[k,])
+#plot(cpp,result,type='n',xlab="CP value",ylab="Cover_probability",main="n=100,Gamma(0.25,0.5)+49.5")
+plot(cpp,result,type='n',xlab="CP value",ylab="Expected_Length",main="n=100,Gamma(0.25,0.5)+49.5")
+text(cpp,result,c(rep("A",5),rep("B",5),rep("C",5),rep("D",5),rep("E",5),rep("F",5),rep("G",5),rep("H",5)))
+legend(1,.10,c("A=ALS","B=ALS*", "C=LS","D=LS*","E=ADJ","F=ADJ*","G=Trunc","H=exact"))
+#lines(xx,result_gamma025ALS[k,],lty=1)
+#lines(xx,result_gamma025ALSb[k,],lty=2)
+#lines(xx,result_gamma025ls[k,],lty=3)
+#lines(xx,result_gamma025lsb[k,],lty=4)
+#lines(xx,result_gamma025[k,],lty=5)
+#lines(xx,result_gamma025b[k,],lty=6)
+#lines(xx,result_gamma025trunc[k,],lty=7)
+#lines(xx,result_gamma025exact[k,],lty=8)
+
+lines(xx,result_gamma025lALS[k,],lty=1)
+lines(xx,result_gamma025lALSb[k,],lty=2)
+lines(xx,result_gamma025lls[k,],lty=3)
+lines(xx,result_gamma025lsb[k,],lty=4)
+lines(xx,result_gamma025l[k,],lty=5)
+lines(xx,result_gamma025lb[k,],lty=6)
+lines(xx,result_gamma025ltrunc[k,],lty=7)
+lines(xx,result_gamma025lexact[k,],lty=8)
+
+
+
+
+
+
+
